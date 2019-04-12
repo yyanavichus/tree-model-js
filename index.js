@@ -210,6 +210,7 @@ module.exports = (function () {
         return;
       }
       node = queue.shift();
+
       for (i = 0, childCount = node.children.length; i < childCount; i++) {
         if (fnFilter(node.children[i]) !== true) {
           continue;
@@ -217,7 +218,34 @@ module.exports = (function () {
 
         queue.push(node.children[i]);
       }
-      if (callback.call(context, node, queue) !== false) {
+
+      var callbackResult = callback.call(context, node, fnFilter);
+
+      if (callbackResult) {
+        if (callbackResult.deleted && callbackResult.deleted.length) {
+          var itemsToDelete = [];
+
+          for (var i = 0; i < queue.length; i++) {
+            var queueItem = queue.peekAt(i);
+
+            if (callbackResult.deleted.includes(queueItem.model.id)) {
+              itemsToDelete.push(queueItem);
+            }
+          }
+
+          for (var i = 0; i < itemsToDelete.length; i++) {
+            queue.remove(itemsToDelete[i]);
+          }
+        }
+
+        if (callbackResult.added && callbackResult.added.length) {
+          for (var i = 0; i < callbackResult.added.length; i++) {
+            queue.push(callbackResult.added[i]);
+          }
+        }
+      }
+
+      if (callbackResult !== false) {
         processQueue();
       }
     })();
