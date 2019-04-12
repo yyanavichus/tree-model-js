@@ -10,10 +10,10 @@
     "requirejs"
   ],
   "homepage": "http://jnuno.com/tree-model-js",
-  "repository": "https://github.com/joaonuno/tree-model-js",
-  "bugs": "https://github.com/joaonuno/tree-model-js/issues",
+  "repository": "https://github.com/yyanavichus/tree-model-js",
+  "bugs": "https://github.com/yyanavichus/tree-model-js/issues",
   "license": "MIT",
-  "author": "João Nuno Silva <jnss81@gmail.com> (http://jnuno.com)",
+  "author": "Yevgeniy Yanavichus <yevgeniy.yanavichus@gmail.com> (http://yanavichus.info)",
   "main": "index.js",
   "scripts": {
     "test": "istanbul cover _mocha",
