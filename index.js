@@ -178,21 +178,12 @@ module.exports = (function () {
   function parseArgs() {
     var args = {};
     if (arguments.length === 1) {
-      if (typeof arguments[0] === 'function') {
-        args.fn = arguments[0];
-      } else {
-        args.options = arguments[0];
-      }
+      args.fn = arguments[0];
     } else if (arguments.length === 2) {
-      if (typeof arguments[0] === 'function') {
-        args.fn = arguments[0];
-        args.ctx = arguments[1];
-      } else {
-        args.options = arguments[0];
-        args.fn = arguments[1];
-      }
+      args.fnFilter = arguments[0];
+      args.fn = arguments[1];
     } else {
-      args.options = arguments[0];
+      args.fnFilter = arguments[0];
       args.fn = arguments[1];
       args.ctx = arguments[2];
     }
@@ -201,17 +192,18 @@ module.exports = (function () {
     if (!walkStrategies[args.options.strategy]) {
       throw new Error('Unknown tree walk strategy. Valid strategies are \'pre\' [default], \'post\' and \'breadth\'.');
     }
+    args.fnFilter = args.fnFilter || k(true);
     return args;
   }
 
   Node.prototype.walk = function () {
     var args;
     args = parseArgs.apply(this, arguments);
-    walkStrategies[args.options.strategy].call(this, args.fn, args.ctx);
+    walkStrategies[args.options.strategy].call(this, args.fn, args.ctx, args.fnFilter);
   };
 
-  walkStrategies.breadth = function breadthFirst(callback, context) {
-    var queue = new Denque(this);
+  walkStrategies.breadth = function breadthFirst(callback, context, fnFilter) {
+    var queue = new Denque([this]);
     (function processQueue() {
       var i, childCount, node;
       if (queue.length === 0) {
@@ -219,6 +211,10 @@ module.exports = (function () {
       }
       node = queue.shift();
       for (i = 0, childCount = node.children.length; i < childCount; i++) {
+        if (fnFilter(node.children[i]) !== true) {
+          continue;
+        }
+
         queue.push(node.children[i]);
       }
       if (callback.call(context, node, queue) !== false) {
