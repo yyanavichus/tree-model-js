@@ -37,8 +37,10 @@
     "uglify-js": "^3"
   },
   "dependencies": {
+    "denque": "^1.4.1",
+    "find-insert-index": "0.0.1",
     "mergesort": "0.0.1",
-    "find-insert-index": "0.0.1"
+    "uuid": "^3.3.2"
   },
   "types": "types"
 }

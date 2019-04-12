@@ -1,6 +1,8 @@
-var mergeSort, findInsertIndex;
+var mergeSort, findInsertIndex, uuidv4, Denque;
 mergeSort = require('mergesort');
 findInsertIndex = require('find-insert-index');
+uuidv4 = require('uuid/v4');
+Denque = require("denque");
 
 module.exports = (function () {
   'use strict';
@@ -42,6 +44,7 @@ module.exports = (function () {
     }
 
     node = new Node(this.config, model);
+    node.model.id = uuidv4();
     if (model[this.config.childrenPropertyName] instanceof Array) {
       if (this.config.modelComparatorFn) {
         model[this.config.childrenPropertyName] = mergeSort(
@@ -208,7 +211,7 @@ module.exports = (function () {
   };
 
   walkStrategies.breadth = function breadthFirst(callback, context) {
-    var queue = [this];
+    var queue = new Denque(this);
     (function processQueue() {
       var i, childCount, node;
       if (queue.length === 0) {
