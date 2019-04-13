@@ -45,6 +45,7 @@ module.exports = (function () {
 
     node = new Node(this.config, model);
     node.model.id = uuidv4();
+    node.model.data = {};
     if (model[this.config.childrenPropertyName] instanceof Array) {
       if (this.config.modelComparatorFn) {
         model[this.config.childrenPropertyName] = mergeSort(
@@ -211,38 +212,30 @@ module.exports = (function () {
       }
       node = queue.shift();
 
+      var callbackResult = callback.call(context, node);
+
+      if (callbackResult) {
+        if (callbackResult.added && callbackResult.added.length) {
+          for (var i = callbackResult.added.length - 1; i >= 0 ; i--) {
+            queue.unshift(callbackResult.added[i]);
+          }
+        }
+      }
+
       for (i = 0, childCount = node.children.length; i < childCount; i++) {
         if (fnFilter(node.children[i]) !== true) {
           continue;
         }
 
-        queue.push(node.children[i]);
-      }
-
-      var callbackResult = callback.call(context, node, fnFilter);
-
-      if (callbackResult) {
-        if (callbackResult.deleted && callbackResult.deleted.length) {
-          var itemsToDelete = [];
-
-          for (var i = 0; i < queue.length; i++) {
-            var queueItem = queue.peekAt(i);
-
-            if (callbackResult.deleted.includes(queueItem.model.id)) {
-              itemsToDelete.push(queueItem);
+        if (callbackResult) {
+          if (callbackResult.deleted && callbackResult.deleted.length) {
+            if (callbackResult.deleted.includes(node.children[i].model.id)) {
+              continue;
             }
           }
-
-          for (var i = 0; i < itemsToDelete.length; i++) {
-            queue.remove(itemsToDelete[i]);
-          }
         }
 
-        if (callbackResult.added && callbackResult.added.length) {
-          for (var i = 0; i < callbackResult.added.length; i++) {
-            queue.push(callbackResult.added[i]);
-          }
-        }
+        queue.push(node.children[i]);
       }
 
       if (callbackResult !== false) {
